@@ -71,6 +71,10 @@ public class XDriveTesting extends LinearOpMode {
             float powerFrontLeft = 0;
             float powerBackRight = 0;
             float powerBackLeft = 0;
+            int length = 0;
+            float angle = 0;
+
+
 
             powerFrontRight -= gamepad1.left_stick_y;
             powerFrontLeft -= gamepad1.left_stick_y;
@@ -87,8 +91,15 @@ public class XDriveTesting extends LinearOpMode {
             powerFrontLeft += gamepad1.right_stick_x;
             powerFrontLeft += gamepad1.right_stick_x;
 
-            slide.setPower(gamepad1.right_trigger - gamepad1.left_trigger);
-            arm.setPower(((gamepad1.dpad_up ? 1 : 0) - (gamepad1.dpad_down ? 1 : 0)) * .1);
+            slide.setPower(gamepad2.left_stick_y);
+            length += gamepad2.left_stick_y;
+            arm.setPower(((gamepad2.dpad_up ? 1 : 0) - (gamepad1.dpad_down ? 1 : 0)) * .1);
+            if (length * Math.cos(angle) > 40){
+                slide.setPower(-1);
+                length -= 1;
+            }
+
+
 
             if (gamepad1.a){
                 if (!aPressed){
@@ -119,7 +130,6 @@ public class XDriveTesting extends LinearOpMode {
             } else {
                 bPressed = false;
             }
-
 
 
 
