@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import java.lang.Math;
 
 
-@TeleOp (name = "testing")
+@TeleOp (name = "XDrive")
 public class XDriveTesting extends LinearOpMode {
     DcMotorEx frontLeft;
     DcMotorEx frontRight;
@@ -59,6 +59,8 @@ public class XDriveTesting extends LinearOpMode {
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         clawPivotLeft.setDirection(Servo.Direction.REVERSE);
+
+        clawGrab.scaleRange(.65, .83);
 
 
         waitForStart();
