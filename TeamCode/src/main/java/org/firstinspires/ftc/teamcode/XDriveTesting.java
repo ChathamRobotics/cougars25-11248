@@ -1,6 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import static org.firstinspires.ftc.teamcode.MotorConstants.ARM_MOTOR_MAX;
+import static org.firstinspires.ftc.teamcode.MotorConstants.ARM_MOTOR_TICKS_PER_RAD;
+import static org.firstinspires.ftc.teamcode.MotorConstants.MOTOR_TICKS_PER_SEC;
+import static org.firstinspires.ftc.teamcode.MotorConstants.SLIDE_MOTOR_MAX;
+import static org.firstinspires.ftc.teamcode.MotorConstants.SLIDE_MOTOR_TICKS_PER_IN;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -30,6 +36,8 @@ public class XDriveTesting extends LinearOpMode {
     boolean clawOpen = true;
     boolean bPressed = false;
 
+    float armTarget = 0;
+
 
 
 
@@ -37,6 +45,7 @@ public class XDriveTesting extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Init code
+
         frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
         frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
         backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
@@ -52,13 +61,16 @@ public class XDriveTesting extends LinearOpMode {
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        arm.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
 
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         clawPivotLeft.setDirection(Servo.Direction.REVERSE);
+
+        arm.setVelocity(0);
+        arm.setTargetPosition(0);
+        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
 
         clawGrab.scaleRange(.65, .83);
 
@@ -73,9 +85,6 @@ public class XDriveTesting extends LinearOpMode {
             float powerFrontLeft = 0;
             float powerBackRight = 0;
             float powerBackLeft = 0;
-            int length = 0;
-            float angle = 0;
-
 
 
             powerFrontRight -= gamepad1.left_stick_y;
@@ -93,13 +102,31 @@ public class XDriveTesting extends LinearOpMode {
             powerFrontLeft += gamepad1.right_stick_x;
             powerFrontLeft += gamepad1.right_stick_x;
 
-            slide.setPower(gamepad2.left_stick_y);
-            length += gamepad2.left_stick_y;
-            arm.setPower(((gamepad2.dpad_up ? 1 : 0) - (gamepad1.dpad_down ? 1 : 0)) * .1);
-            if (length * Math.cos(angle) > 40){
-                slide.setPower(-1);
-                length -= 1;
+            armTarget -= gamepad2.right_stick_y * 10;
+            arm.setTargetPosition((int) armTarget);
+
+            double slideVel = (-gamepad2.left_stick_y * MOTOR_TICKS_PER_SEC);
+            double armVel = (armTarget > arm.getCurrentPosition() ? 1 : -1);
+
+            if (((double) slide.getCurrentPosition() / SLIDE_MOTOR_TICKS_PER_IN) * Math.cos((double) arm.getCurrentPosition() / ARM_MOTOR_TICKS_PER_RAD) > 40){
+                if (gamepad2.left_stick_y < 0) {
+                    slideVel = 0;
+                }
+                if (gamepad2.right_stick_y > 0) {
+                    armVel = 0;
+                    armTarget = arm.getCurrentPosition();
+                }
             }
+            if ((gamepad2.left_stick_y < 0 && slide.getCurrentPosition() >= SLIDE_MOTOR_MAX) || (gamepad2.left_stick_y > 0 && slide.getCurrentPosition() <= 0)) {
+                slideVel = 0;
+            }
+            if ((gamepad2.right_stick_y < 0 && arm.getCurrentPosition() >= ARM_MOTOR_MAX) || (gamepad2.right_stick_y > 0 && arm.getCurrentPosition() <= 0)) {
+                armVel = 0;
+                armTarget = arm.getCurrentPosition();
+            }
+
+            slide.setVelocity(slideVel);
+            arm.setVelocity(armVel);
 
 
 
@@ -144,10 +171,10 @@ public class XDriveTesting extends LinearOpMode {
                 powerBackRight /= maxe;
                 powerBackLeft /= maxe;
             }
-            frontRight.setPower(powerFrontRight);
-            frontLeft.setPower(powerFrontLeft);
-            backRight.setPower(powerBackRight);
-            backLeft.setPower(powerBackLeft);
+            frontRight.setVelocity(powerFrontRight * MOTOR_TICKS_PER_SEC);
+            frontLeft.setVelocity(powerFrontLeft * MOTOR_TICKS_PER_SEC);
+            backRight.setVelocity(powerBackRight * MOTOR_TICKS_PER_SEC);
+            backLeft.setVelocity(powerBackLeft * MOTOR_TICKS_PER_SEC);
         }
     }
 }

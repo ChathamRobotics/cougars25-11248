@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.MotorConstants.SLIDE_MOTOR_TICKS_PER_IN;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -90,13 +92,20 @@ public class MotorTest extends LinearOpMode
                 rightDownLastFrame = false;
             }
 
+            // Reset Encoder
+            if (gamepad1.a) {
+                motors.get(motorIndex).setMode(RunMode.STOP_AND_RESET_ENCODER);
+                motors.get(motorIndex).setMode(RunMode.RUN_USING_ENCODER);
+            }
+
             // Actually turn the selected motor
             DcMotor currMotor = motors.get(motorIndex);
-            currMotor.setPower(gamepad1.left_stick_y * power);
+            currMotor.setPower(-gamepad1.left_stick_y * power);
 
             // Display the current motor name, encoder position, and power
             telemetry.addData("Motor", motorNames.get(motorIndex));
             telemetry.addData("Motor Position", currMotor.getCurrentPosition());
+            telemetry.addData("Slide Motor Position (in)", currMotor.getCurrentPosition() / (float) SLIDE_MOTOR_TICKS_PER_IN);
             telemetry.addData("Motor Power", currMotor.getPower());
             telemetry.addData("Power", power);
             telemetry.update();
