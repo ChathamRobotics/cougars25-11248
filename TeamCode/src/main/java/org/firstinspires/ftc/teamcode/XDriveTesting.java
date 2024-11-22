@@ -67,17 +67,19 @@ public class XDriveTesting extends LinearOpMode {
 
         clawPivotLeft.setDirection(Servo.Direction.REVERSE);
 
-        arm.setVelocity(0);
-        arm.setTargetPosition(0);
-        arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //arm.setVelocity(0);
+        //arm.setTargetPosition(0);
+        //arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
-        clawGrab.scaleRange(.65, .83);
+        //clawGrab.scaleRange(.65, .83);
 
 
         waitForStart();
 
         // start code
+        double slideVel;
+        double armVel;
 
         while (opModeIsActive()) {
 
@@ -102,31 +104,32 @@ public class XDriveTesting extends LinearOpMode {
             powerFrontLeft += gamepad1.right_stick_x;
             powerFrontLeft += gamepad1.right_stick_x;
 
-            armTarget -= gamepad2.right_stick_y * 10;
-            arm.setTargetPosition((int) armTarget);
+            //armTarget -= gamepad2.right_stick_y * 10;
+            //arm.setTargetPosition((int) armTarget);
 
-            double slideVel = (-gamepad2.left_stick_y * MOTOR_TICKS_PER_SEC);
-            double armVel = (armTarget > arm.getCurrentPosition() ? 1 : -1);
+            slideVel = (-gamepad2.left_stick_y/Math.abs(gamepad2.left_stick_y));
+            armVel = (-gamepad2.right_stick_y/Math.abs(gamepad2.right_stick_y));
+            //double armVel = (armTarget > arm.getCurrentPosition() ? 1 : -1);
 
-            if (((double) slide.getCurrentPosition() / SLIDE_MOTOR_TICKS_PER_IN) * Math.cos((double) arm.getCurrentPosition() / ARM_MOTOR_TICKS_PER_RAD) > 40){
-                if (gamepad2.left_stick_y < 0) {
-                    slideVel = 0;
-                }
-                if (gamepad2.right_stick_y > 0) {
-                    armVel = 0;
-                    armTarget = arm.getCurrentPosition();
-                }
-            }
-            if ((gamepad2.left_stick_y < 0 && slide.getCurrentPosition() >= SLIDE_MOTOR_MAX) || (gamepad2.left_stick_y > 0 && slide.getCurrentPosition() <= 0)) {
-                slideVel = 0;
-            }
-            if ((gamepad2.right_stick_y < 0 && arm.getCurrentPosition() >= ARM_MOTOR_MAX) || (gamepad2.right_stick_y > 0 && arm.getCurrentPosition() <= 0)) {
-                armVel = 0;
-                armTarget = arm.getCurrentPosition();
-            }
+            //if (((double) slide.getCurrentPosition() / SLIDE_MOTOR_TICKS_PER_IN) * Math.cos((double) arm.getCurrentPosition() / ARM_MOTOR_TICKS_PER_RAD) > 40){
+            //    if (gamepad2.left_stick_y < 0) {
+            //        slideVel = 0;
+            //    }
+                //if (gamepad2.right_stick_y > 0) {
+                  //  armVel = 0;
+                 //   armTarget = arm.getCurrentPosition();
+                //}
+            //}
+            //if ((gamepad2.left_stick_y < 0 && slide.getCurrentPosition() >= SLIDE_MOTOR_MAX) || (gamepad2.left_stick_y > 0 && slide.getCurrentPosition() <= 0)) {
+            //    slideVel = 0;
+            //}
+            //if ((gamepad2.right_stick_y < 0 && arm.getCurrentPosition() >= ARM_MOTOR_MAX) || (gamepad2.right_stick_y > 0 && arm.getCurrentPosition() <= 0)) {
+            //    armVel = 0;
+            //    armTarget = arm.getCurrentPosition();
+            //}
 
-            slide.setVelocity(slideVel);
-            arm.setVelocity(armVel);
+            slide.setPower(slideVel);
+            arm.setPower(armVel);
 
 
 

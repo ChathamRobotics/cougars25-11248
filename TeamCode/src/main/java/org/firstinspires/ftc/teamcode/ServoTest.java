@@ -92,12 +92,14 @@ public class ServoTest extends LinearOpMode
 
             // Actually turn the selected motor
             Servo currServo = servos.get(servoIndex);
-            if (gamepad1.left_bumper && lastMovement + 0.5 < runtime.time()) {
+            //&& lastMovement + 0.5 < runtime.time()
+            if (gamepad1.left_bumper) {
                 servoPos -= power;
                 currServo.setPosition(servoPos);
                 lastMovement = runtime.time();
             }
-            if (gamepad1.right_bumper && lastMovement + 0.5 < runtime.time()) {
+            //&& lastMovement + 0.5 < runtime.time()
+            if (gamepad1.right_bumper) {
                 servoPos += power;
                 currServo.setPosition(servoPos);
                 lastMovement = runtime.time();
