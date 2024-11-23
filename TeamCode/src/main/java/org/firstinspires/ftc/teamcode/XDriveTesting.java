@@ -14,6 +14,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 import java.lang.Math;
 
 
@@ -27,8 +29,8 @@ public class XDriveTesting extends LinearOpMode {
     DcMotorEx slide;
     DcMotorEx arm;
 
-    Servo clawPivotRight;
-    Servo clawPivotLeft;
+    //Servo clawPivotRight;
+    //Servo clawPivotLeft;
     Servo clawGrab;
 
     boolean positionUp = true;
@@ -50,8 +52,8 @@ public class XDriveTesting extends LinearOpMode {
         frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
         backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
         backRight = hardwareMap.get(DcMotorEx.class, "backRight");
-        clawPivotRight = hardwareMap.get(Servo.class, "clawPivotRight");
-        clawPivotLeft = hardwareMap.get(Servo.class, "clawPivotLeft");
+        //clawPivotRight = hardwareMap.get(Servo.class, "clawPivotRight");
+        //clawPivotLeft = hardwareMap.get(Servo.class, "clawPivotLeft");
         clawGrab = hardwareMap.get(Servo.class, "clawGrab");
         slide = hardwareMap.get(DcMotorEx.class, "slide");
         arm = hardwareMap.get(DcMotorEx.class, "arm");
@@ -61,11 +63,14 @@ public class XDriveTesting extends LinearOpMode {
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         slide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        arm.setTargetPosition(0);
+        //arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        clawPivotLeft.setDirection(Servo.Direction.REVERSE);
+        //clawPivotLeft.setDirection(Servo.Direction.REVERSE);
 
         //arm.setVelocity(0);
         //arm.setTargetPosition(0);
@@ -80,6 +85,7 @@ public class XDriveTesting extends LinearOpMode {
         // start code
         double slideVel;
         double armVel;
+        float realarmpos;
 
         while (opModeIsActive()) {
 
@@ -87,28 +93,60 @@ public class XDriveTesting extends LinearOpMode {
             float powerFrontLeft = 0;
             float powerBackRight = 0;
             float powerBackLeft = 0;
+            float servoPos = 0;
+            float power = 0;
 
 
-            powerFrontRight -= gamepad1.left_stick_y;
-            powerFrontLeft -= gamepad1.left_stick_y;
-            powerBackRight -= gamepad1.left_stick_y;
-            powerBackLeft -= gamepad1.left_stick_y;
+            powerFrontRight -= gamepad1.left_stick_y*0.2;
+            powerFrontLeft -= gamepad1.left_stick_y*0.2;
+            powerBackRight -= gamepad1.left_stick_y*0.2;
+            powerBackLeft -= gamepad1.left_stick_y*0.2;
 
-            powerFrontRight += -gamepad1.left_stick_x;
-            powerBackRight += gamepad1.left_stick_x;
-            powerFrontLeft += gamepad1.left_stick_x;
-            powerBackLeft += -gamepad1.left_stick_x;
+            powerFrontRight += -gamepad1.left_stick_x*0.2;
+            powerBackRight += gamepad1.left_stick_x*0.2;
+            powerFrontLeft += gamepad1.left_stick_x*0.2;
+            powerBackLeft += -gamepad1.left_stick_x*0.2;
 
-            powerFrontRight += -gamepad1.right_stick_x;
-            powerBackRight += -gamepad1.right_stick_x;
-            powerFrontLeft += gamepad1.right_stick_x;
-            powerFrontLeft += gamepad1.right_stick_x;
+            powerFrontRight += -gamepad1.right_stick_x*0.2;
+            powerBackRight += -gamepad1.right_stick_x*0.2;
+            powerFrontLeft += gamepad1.right_stick_x*0.2;
+            powerFrontLeft += gamepad1.right_stick_x*0.2;
 
             //armTarget -= gamepad2.right_stick_y * 10;
             //arm.setTargetPosition((int) armTarget);
 
-            slideVel = (-gamepad2.left_stick_y/Math.abs(gamepad2.left_stick_y));
-            armVel = (-gamepad2.right_stick_y/Math.abs(gamepad2.right_stick_y));
+            slideVel = (gamepad2.left_stick_y*10);
+            armVel = (gamepad2.right_stick_y*10);
+            telemetry.addData("Arm", arm.getCurrentPosition());
+            telemetry.addData("Slide", slide.getCurrentPosition());
+            telemetry.update();
+            slide.setPower(slideVel);
+            arm.setPower(armVel);
+
+
+            if (gamepad1.left_bumper) {
+                servoPos -= power;
+                clawGrab.setPosition(servoPos);
+
+            }
+            //&& lastMovement + 0.5 < runtime.time()
+
+            if (gamepad1.right_bumper) {
+                servoPos += power;
+                clawGrab.setPosition(servoPos);
+            }
+
+
+            if (gamepad2.left_bumper) {
+                clawGrab.setPosition(0.8);
+            }
+            //&& lastMovement + 0.5 < runtime.time()
+            if (gamepad2.right_bumper) {
+                clawGrab.setPosition(0.2);
+            }
+            if (servoPos > 0.8) servoPos = 0.8f;
+            if (servoPos < 0.5) servoPos = 0.5f;
+
             //double armVel = (armTarget > arm.getCurrentPosition() ? 1 : -1);
 
             //if (((double) slide.getCurrentPosition() / SLIDE_MOTOR_TICKS_PER_IN) * Math.cos((double) arm.getCurrentPosition() / ARM_MOTOR_TICKS_PER_RAD) > 40){
@@ -127,9 +165,6 @@ public class XDriveTesting extends LinearOpMode {
             //    armVel = 0;
             //    armTarget = arm.getCurrentPosition();
             //}
-
-            slide.setPower(slideVel);
-            arm.setPower(armVel);
 
 
 
@@ -152,11 +187,11 @@ public class XDriveTesting extends LinearOpMode {
                     bPressed = true;
                     positionUp = !positionUp;
                     if (positionUp) {
-                        clawPivotLeft.setPosition(1);
-                        clawPivotRight.setPosition(1);
+                        //clawPivotLeft.setPosition(1);
+                        //clawPivotRight.setPosition(1);
                     } else {
-                        clawPivotLeft.setPosition(0);
-                        clawPivotRight.setPosition(0);
+                        //clawPivotLeft.setPosition(0);
+                        //clawPivotRight.setPosition(0);
                     }
                 }
             } else {

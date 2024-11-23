@@ -104,8 +104,8 @@ public class ServoTest extends LinearOpMode
                 currServo.setPosition(servoPos);
                 lastMovement = runtime.time();
             }
-            if (servoPos > 1) servoPos = 1;
-            if (servoPos < 0) servoPos = 0;
+            if (servoPos > 0.8) servoPos = 0.8f;
+            if (servoPos < 0.2) servoPos = 0.2f;
 
 
             // Display the current motor name, encoder position, and power
