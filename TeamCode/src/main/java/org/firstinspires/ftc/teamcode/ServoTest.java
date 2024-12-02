@@ -24,7 +24,7 @@ public class ServoTest extends LinearOpMode
     private boolean leftDownLastFrame = false;
     private boolean rightDownLastFrame = false;
     private float servoPos = 0.5f;
-    private double lastMovement;
+    double lastMovement;
 
     @Override
     public void runOpMode()
@@ -93,19 +93,19 @@ public class ServoTest extends LinearOpMode
             // Actually turn the selected motor
             Servo currServo = servos.get(servoIndex);
             //&& lastMovement + 0.5 < runtime.time()
-            if (gamepad1.left_bumper) {
+
+            if (gamepad1.left_bumper && runtime.time() > lastMovement + 0.1) {
                 servoPos -= power;
                 currServo.setPosition(servoPos);
                 lastMovement = runtime.time();
             }
             //&& lastMovement + 0.5 < runtime.time()
-            if (gamepad1.right_bumper) {
+            if (gamepad1.right_bumper && runtime.time() > lastMovement + 0.1) {
                 servoPos += power;
                 currServo.setPosition(servoPos);
                 lastMovement = runtime.time();
             }
-            if (servoPos > 0.8) servoPos = 0.8f;
-            if (servoPos < 0.2) servoPos = 0.2f;
+
 
 
             // Display the current motor name, encoder position, and power
