@@ -45,10 +45,10 @@ public class TrainingWheels extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         // Init code
 
-        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
-        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
-        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
-        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
+        frontLeft = hardwareMap.get(DcMotorEx.class, "leftFront");
+        frontRight = hardwareMap.get(DcMotorEx.class, "rightFront");
+        backLeft = hardwareMap.get(DcMotorEx.class, "leftBack");
+        backRight = hardwareMap.get(DcMotorEx.class, "rightBack");
         //clawPivotRight = hardwareMap.get(Servo.class, "clawPivotRight");
         //clawPivotLeft = hardwareMap.get(Servo.class, "clawPivotLeft");
         clawGrab = hardwareMap.get(Servo.class, "clawGrab");
@@ -131,7 +131,7 @@ public class TrainingWheels extends LinearOpMode {
             }
 
             if (gamepad2.left_stick_y * (slideTarget - slide.getCurrentPosition()) > 0) slideTarget = slide.getCurrentPosition();
-            slideTarget += (int) (-gamepad2.left_stick_y*50);
+            slideTarget += (int) (-gamepad2.left_stick_y*35);
             if (slideTarget > SLIDE_MOTOR_MAX) {
                 slideTarget = (int) SLIDE_MOTOR_MAX;
             }
@@ -140,7 +140,7 @@ public class TrainingWheels extends LinearOpMode {
             }
 
             if (gamepad2.right_stick_y * (armTarget - arm.getCurrentPosition()) > 0) armTarget = arm.getCurrentPosition();
-            armTarget += (int) (-gamepad2.right_stick_y*50);
+            armTarget += (int) (-gamepad2.right_stick_y*35);
             if (armTarget > ARM_MOTOR_MAX) {
                 armTarget = (int) ARM_MOTOR_MAX;
             }
@@ -148,10 +148,10 @@ public class TrainingWheels extends LinearOpMode {
                 armTarget = 0;
             }
 
-            double extendTarget = ((float) slideTarget / SLIDE_MOTOR_TICKS_PER_IN) * Math.cos(((float) armTarget-1000) / ARM_MOTOR_TICKS_PER_RAD);
-            if(extendTarget > 8){
+            /*double extendTarget = ((float) slideTarget / SLIDE_MOTOR_TICKS_PER_IN) * Math.cos(((float) armTarget-1000) / ARM_MOTOR_TICKS_PER_RAD);
+            if(extendTarget > 24){
                 slideTarget = (int) ((8 / (Math.cos(((float) armTarget-1000) / ARM_MOTOR_TICKS_PER_RAD))) * SLIDE_MOTOR_TICKS_PER_IN);
-            }
+            }*/
 
             slide.setTargetPosition(slideTarget);
             slide.setPower(.5);
@@ -183,11 +183,11 @@ public class TrainingWheels extends LinearOpMode {
             //}
 
             if (gamepad2.right_bumper && lastMovement + 0.3f < getRuntime()){
-                servoPos += 0.1f;
+                servoPos += 0.2f;
                 lastMovement = (float)getRuntime();
             }
             if (gamepad2.left_bumper && lastMovement + 0.3f < getRuntime()){
-                servoPos -= 0.1f;
+                servoPos -= 0.2f;
                 lastMovement = (float)getRuntime();
             }
 

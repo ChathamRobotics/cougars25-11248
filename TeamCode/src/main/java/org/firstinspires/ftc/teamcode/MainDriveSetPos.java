@@ -45,16 +45,20 @@ public class MainDriveSetPos extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         // Init code
 
-        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
-        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
-        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
-        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
+        frontLeft = hardwareMap.get(DcMotorEx.class, "leftFront");
+        frontRight = hardwareMap.get(DcMotorEx.class, "rightFront");
+        backLeft = hardwareMap.get(DcMotorEx.class, "leftBack");
+        backRight = hardwareMap.get(DcMotorEx.class, "rightBack");
         //clawPivotRight = hardwareMap.get(Servo.class, "clawPivotRight");
         //clawPivotLeft = hardwareMap.get(Servo.class, "clawPivotLeft");
         clawGrab = hardwareMap.get(Servo.class, "clawGrab");
         slide = hardwareMap.get(DcMotorEx.class, "slide");
         arm = hardwareMap.get(DcMotorEx.class, "arm");
 
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -68,7 +72,7 @@ public class MainDriveSetPos extends LinearOpMode {
         slide.setDirection(DcMotorSimple.Direction.REVERSE);
 
         arm.setDirection(DcMotorSimple.Direction.REVERSE);
-        arm.setTargetPosition(1562);
+        arm.setTargetPosition(1420);
         arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         arm.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -76,12 +80,13 @@ public class MainDriveSetPos extends LinearOpMode {
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        while (arm.getCurrentPosition() < 1558){
-            arm.setPower(0.1);
+        /*
+        while (arm.getCurrentPosition() < 1400){
+            arm.setPower(0.45);
             telemetry.addData("Arm", arm.getCurrentPosition());
             telemetry.addData("Slide", slide.getCurrentPosition());
             telemetry.update();
-        }
+        }*/ 
 
         telemetry.addData("Arm", arm.getCurrentPosition());
         telemetry.addData("Slide", slide.getCurrentPosition());
@@ -97,6 +102,7 @@ public class MainDriveSetPos extends LinearOpMode {
         // start code
         float servoPos = 0.3f;
         float lastMovement = 0;
+        boolean editMode = false;
 
         while (opModeIsActive()) {
 
@@ -121,37 +127,54 @@ public class MainDriveSetPos extends LinearOpMode {
             powerFrontLeft += gamepad1.right_stick_x * .75f;
             powerBackLeft += gamepad1.right_stick_x * .75f;
 
-            if (gamepad2.y){
-                arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            }
-            if (gamepad2.x){
-                slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            }
+
 
             if (gamepad2.left_stick_y * (slideTarget - slide.getCurrentPosition()) > 0) slideTarget = slide.getCurrentPosition();
             slideTarget += (int) (-gamepad2.left_stick_y*50);
             if (slideTarget > SLIDE_MOTOR_MAX) {
                 slideTarget = (int) SLIDE_MOTOR_MAX;
             }
-            if (slideTarget < 0) {
+            if (slideTarget < 0 && !gamepad2.a) {
                 slideTarget = 0;
             }
 
             if (gamepad2.right_stick_y * (armTarget - arm.getCurrentPosition()) > 0) armTarget = arm.getCurrentPosition();
-            armTarget += (int) (-gamepad2.right_stick_y*50);
+            if (gamepad2.left_trigger > 0.1) {
+                armTarget += (int) (-gamepad2.right_stick_y*20);
+            } else {
+                armTarget += (int) (-gamepad2.right_stick_y*50);
+            }
             if (armTarget > ARM_MOTOR_MAX) {
                 armTarget = (int) ARM_MOTOR_MAX;
             }
-            if (armTarget < 0) {
+            if (armTarget < 0 && !gamepad2.a) {
                 armTarget = 0;
             }
 
-            double extendTarget = ((float) slideTarget / SLIDE_MOTOR_TICKS_PER_IN) * Math.cos(((float) armTarget-1000) / ARM_MOTOR_TICKS_PER_RAD);
-            if(extendTarget > 14){
-                slideTarget = (int) ((14 / (Math.cos(((float) armTarget-1000) / ARM_MOTOR_TICKS_PER_RAD))) * SLIDE_MOTOR_TICKS_PER_IN);
+            if (gamepad2.a) {
+                editMode = true;
             }
+            if (gamepad2.y || (editMode && !gamepad2.a)){
+                arm.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                arm.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armTarget = 0;
+            }
+            if (gamepad2.x || (editMode && !gamepad2.a)){
+                slide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                slide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                slideTarget = 0;
+                editMode = false;
+            }
+
+            double extendTarget = ((float) slideTarget / SLIDE_MOTOR_TICKS_PER_IN) * Math.cos(((float) armTarget-1000) / ARM_MOTOR_TICKS_PER_RAD);
+            if(extendTarget > 16){
+                slideTarget = (int) ((16 / (Math.cos(((float) armTarget-1000) / ARM_MOTOR_TICKS_PER_RAD))) * SLIDE_MOTOR_TICKS_PER_IN);
+            }
+            telemetry.addData("extendTarget", extendTarget);
+            telemetry.addData("length", (float) slideTarget / SLIDE_MOTOR_TICKS_PER_IN);
+            telemetry.addData("angle", Math.cos(((float) armTarget-1000) / ARM_MOTOR_TICKS_PER_RAD));
+            telemetry.addData("armTargetAngleTHingy", ((float) armTarget-1000) / ARM_MOTOR_TICKS_PER_RAD);
+            telemetry.addData("#", ARM_MOTOR_TICKS_PER_RAD);
 
             slide.setTargetPosition(slideTarget);
             slide.setPower(1);
@@ -170,18 +193,6 @@ public class MainDriveSetPos extends LinearOpMode {
             telemetry.addData("Slide Power", slide.getPower());
 
 
-            //&& lastMovement + 0.5 < runtime.time()
-
-
-
-            //if (gamepad1.left_bumper) {
-            //    clawGrab.setPosition(0.9);
-            //}
-            //&& lastMovement + 0.5 < runtime.time()
-            //if (gamepad1.right_bumper) {
-            //    clawGrab.setPosition(0.5);
-            //}
-
             if (gamepad2.right_bumper && lastMovement + 0.3f < getRuntime()){
                 servoPos += 0.1f;
                 lastMovement = (float)getRuntime();
@@ -192,27 +203,6 @@ public class MainDriveSetPos extends LinearOpMode {
             }
 
             clawGrab.setPosition(servoPos);
-            //if (servoPos > 0.8) servoPos = 0.8f;
-            //if (servoPos < 0.5) servoPos = 0.5f;
-
-            //double armVel = (armTarget > arm.getCurrentPosition() ? 1 : -1);
-
-            //if (((double) slide.getCurrentPosition() / SLIDE_MOTOR_TICKS_PER_IN) * Math.cos((double) arm.getCurrentPosition() / ARM_MOTOR_TICKS_PER_RAD) > 40){
-            //    if (gamepad2.left_stick_y < 0) {
-            //        slideVel = 0;
-            //    }
-                //if (gamepad2.right_stick_y > 0) {
-                  //  armVel = 0;
-                 //   armTarget = arm.getCurrentPosition();
-                //}
-            //}
-            //if ((gamepad2.left_stick_y < 0 && slide.getCurrentPosition() >= SLIDE_MOTOR_MAX) || (gamepad2.left_stick_y > 0 && slide.getCurrentPosition() <= 0)) {
-            //    slideVel = 0;
-            //}
-            //if ((gamepad2.right_stick_y < 0 && arm.getCurrentPosition() >= ARM_MOTOR_MAX) || (gamepad2.right_stick_y > 0 && arm.getCurrentPosition() <= 0)) {
-            //    armVel = 0;
-            //    armTarget = arm.getCurrentPosition();
-            //}
 
 
 
@@ -230,22 +220,6 @@ public class MainDriveSetPos extends LinearOpMode {
                 aPressed = false;
             }
 
-            if (gamepad1.b){
-                if (!bPressed){
-                    bPressed = true;
-                    positionUp = !positionUp;
-                    if (positionUp) {
-                        //clawPivotLeft.setPosition(1);
-                        //clawPivotRight.setPosition(1);
-                    } else {
-                        //clawPivotLeft.setPosition(0);
-                        //clawPivotRight.setPosition(0);
-                    }
-                }
-            } else {
-                bPressed = false;
-            }
-
 
 
             float maxe = Math.max(Math.abs(powerFrontRight), Math.abs(powerFrontLeft));
@@ -259,7 +233,7 @@ public class MainDriveSetPos extends LinearOpMode {
             }
 
             if (gamepad1.right_bumper) {
-                speed = 0.7f;
+                speed = 1f;
             }
             else if (gamepad1.left_bumper) {
                 speed = .3f;
@@ -282,10 +256,10 @@ public class MainDriveSetPos extends LinearOpMode {
             telemetry.addData("backRight Power", powerBackRight);
             telemetry.addData("backLeft Power", powerBackLeft);
 
-            telemetry.addData("frontRight Power (real)", frontRight.getPower());
-            telemetry.addData("frontLeft Power (real)", frontLeft.getPower());
-            telemetry.addData("backRight Power (real)", backRight.getPower());
-            telemetry.addData("backLeft Power (real)", backLeft.getPower());
+            telemetry.addData("frontRight pos", frontRight.getCurrentPosition());
+            telemetry.addData("frontLeft pos", frontLeft.getCurrentPosition());
+            telemetry.addData("backRight pos", backRight.getCurrentPosition());
+            telemetry.addData("backLeft pos", backLeft.getCurrentPosition());
 
             telemetry.update();
         }
